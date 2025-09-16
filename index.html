@@ -34,7 +34,16 @@
     header{position:sticky;top:0;background:linear-gradient(180deg,#fff,rgba(255,255,255,.9));backdrop-filter:saturate(1.5) blur(6px);border-bottom:1px solid #E5E7EB;z-index:100;padding:10px 0;}
     .wrap{max-width:920px;margin:0 auto;padding:0 16px;}
     .brand{display:flex;align-items:center;gap:12px;}
-    .brand h1{font-size:20px;font-weight:600;color:var(--ink);}
+    /* Style the main heading as a button‑like element */
+    .brand h1{
+      font-size:22px;
+      font-weight:600;
+      color:#fff;
+      padding:6px 12px;
+      background:linear-gradient(90deg,var(--ink),var(--accent));
+      border-radius:10px;
+      box-shadow:0 4px 8px rgba(0,0,0,0.1);
+    }
     .pill{margin-left:auto;font-size:12px;background:var(--accent);color:#fff;padding:4px 10px;border-radius:999px;white-space:nowrap;}
     main{padding:16px 0 32px;}
     .card{background:var(--card);border:1px solid #E5E7EB;border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:16px 0;}
@@ -65,7 +74,44 @@
     details summary{cursor:pointer;margin-top:8px;margin-bottom:4px;font-weight:500;color:var(--ink2);}
     .badge{font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid #D1D5DB;margin-right:6px;}
     .badge.good{background:#ECFDF5;color:#065F46;border-color:#A7F3D0;}
+    /* Dynamic instructions button */
+    .instructions-btn{
+      display:inline-block;
+      background:var(--accent);
+      color:#fff;
+      padding:10px 16px;
+      border-radius:8px;
+      text-decoration:none;
+      animation:pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow:0 0 0 0 rgba(37,99,235,0.4); }
+      70% { box-shadow:0 0 0 12px rgba(37,99,235,0); }
+      100% { box-shadow:0 0 0 0 rgba(37,99,235,0); }
+    }
+
+    /* Style for the directive call‑out that explains how to enable the Begin button */
+    .directive{
+      /* Add extra spacing to separate the notice from other text */
+      margin-top:16px;
+      /* Use a bright golden backdrop to catch attention */
+      background:#FEF3C7;
+      /* Deep orange text for high contrast */
+      color:#92400E;
+      /* Thicker border for emphasis */
+      border:2px solid #FACC15;
+      padding:14px 16px;
+      border-radius:10px;
+      font-size:16px;
+      font-weight:700;
+      line-height:1.4;
+    }
     footer{margin-top:32px;font-size:13px;color:var(--muted);}
+
+    /* Add top margin to the intro card so the content sits lower on the page */
+    #intro{
+      margin-top:40px;
+    }
   </style>
 </head>
 <body>
@@ -85,8 +131,13 @@
       <li><strong>What you need:</strong> an open mind, honesty and a willingness to explore what energises you</li>
       <li><strong>Outcome:</strong> 3 personalised topic seeds, 3 research questions, outline starters &amp; a speakable citation line</li>
     </ul>
+
+    <!-- Directive to explain the disabled Begin button and the need to view instructions -->
+    <p class="directive">⚠️ <strong>Step&nbsp;1</strong> – Click the <strong>Instructions</strong> button and read the guidance carefully. When you’re done, return to this page: the <strong>Begin</strong> button will light up and be ready for use.</p>
     <div class="controls">
-      <button id="start">Begin</button>
+      <!-- Emphasised instructions button comes first -->
+      <button id="instructionsBtn" class="instructions-btn">Instructions</button>
+      <button id="start" disabled>Begin</button>
       <button class="secondary" id="load">Load saved</button>
       <button class="ghost" id="clear">Clear saved</button>
     </div>
@@ -511,6 +562,43 @@ const skipBtn = document.getElementById('skip');
 const exportBtn = document.getElementById('export');
 const saveBtn = document.getElementById('save');
 const restartBtn = document.getElementById('restart');
+
+// Check if instructions were viewed previously; if so, enable the start button
+try {
+  if (localStorage.getItem('instructionsVisited') === 'true') {
+    if (startBtn) startBtn.disabled = false;
+  }
+} catch(e) {
+  // ignore storage access issues
+}
+
+// Attach behaviour to the instructions button.  When clicked, it enables the
+// start button and opens the instructions in a new tab.
+const instructionsBtn = document.getElementById('instructionsBtn');
+if (instructionsBtn) {
+  instructionsBtn.onclick = () => {
+    enableStartButton();
+    try {
+      window.open('jung_topic_forge_instructions.html','_blank');
+    } catch(e) {
+      // ignore errors opening new tab
+    }
+  };
+}
+
+// Enable the start button once the instructions have been viewed.  This
+// function is called via the onclick handler on the Instructions link.
+function enableStartButton() {
+  if (startBtn) {
+    startBtn.disabled = false;
+    try {
+      // Persist the fact that instructions have been viewed
+      localStorage.setItem('instructionsVisited','true');
+    } catch (e) {
+      // ignore storage errors
+    }
+  }
+}
 
 // Render current question
 let currentGetter = null;
